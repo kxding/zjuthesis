@@ -52,7 +52,8 @@
 \PassOptionsToPackage{AutoFakeBold}{xeCJK}
 
 \usepackage{xifthen}
-
+\usepackage{tikz-cd}
+\usepackage{amsmath}
 \ifthenelse{\equal{\TwoSide}{true}}
 {
     \PassOptionsToClass{

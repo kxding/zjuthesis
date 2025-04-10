@@ -1,0 +1,3 @@
+根目录下运行
+sh script/utils/word_count.sh  # 字数统计
+latexmk -xelatex -outdir=out zjuthesis #编辑全部
