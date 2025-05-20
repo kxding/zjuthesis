@@ -3,7 +3,7 @@
 {
     \sectionnonum{附录}
     \appendixsubsecmajornumbering
-    \subsection{实验细节}
+    \subsection{实验参数设定}
     本文提出的首帧替换策略、参考帧拼接策略以及ID注入方法均在8张 NVIDIA A800 显卡上进行训练。其中，首帧替换策略训练了约 20,000 个迭代步骤，参考帧拼接策略则训练约 450,000 步以达到最佳效果。所有实验均基于 DiT 模型进行，训练数据采自开源数据集 Koala36M，并从中随机抽取 100 万条样本用于模型训练。实验中所采用的关键参数配置如下所示：
 
 \begin{table}[h]
