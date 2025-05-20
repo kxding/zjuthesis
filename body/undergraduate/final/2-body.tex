@@ -73,7 +73,7 @@
 同时，由于摆脱了严格的位置编码模仿，本章希望生成的视频能够在保持ID一致性的前提下，展现出比原始参考帧拼接策略中观察到的更大幅度、更自然的动作，避免出现对参考图像姿态或动态的过度复刻现象。
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{data3.pdf}
+    \includegraphics[width=0.6\textwidth]{data3.pdf}
     \caption{\textbf{基于DiT的参考图像引导视频生成之图像帧拼接策略框架图}：流程显示图像经VAE编码为潜变量，与其他数据结合后输入专家Transformer模块处理，最终解码输出视频。}
     \label{architecture1}
 \end{figure}
@@ -123,6 +123,9 @@ z_1 \leftarrow z_1 - \text{dts}[i] \cdot u_{t,\theta}
 
 \subsection{本章小结}
 本章聚焦于解决参考图可控视频生成的核心问题，提出并设计了一系列实验。围绕增强生成视频一致性和优化高分辨率生成效率，循序渐进地介绍了本文的主要实验设计和训练流程，并在附录中提供了相应的伪代码以方便理解和复现。具体研究内容包括对固定首帧图像到视频生成的两种不同训练策略（首帧替换和参考帧拼接）的对比分析；基于类似参考帧拼接思想，实现更灵活的身份（ID）信息保持的视频生成方法；以及为显著降低高分辨率视频生成计算开销而提出的基于流匹配的高效生成方法。
+
+\cleardoublepage
+
 \section{实验结果与分析}
 \subsection{评估方法}
 
@@ -267,7 +270,7 @@ Wan视频 \cite{wan2025} & 92.83 & 95.42 & 98.47 & 54.84 & 62.66 & 69.04 \\
 \begin{table}[htbp]
     \centering
     \caption{不同模型参数量及在不同分辨率和帧数下的推理时间(秒/步)对比}
-    \resizebox{1\linewidth}{!}{
+    \resizebox{\linewidth}{!}{
     \renewcommand{\arraystretch}{1.2}
     \begin{tabular}{p{2.5cm} p{1.5cm} ccccccc}
     \toprule
@@ -305,8 +308,8 @@ Wan视频 \cite{wan2025} & 92.83 & 95.42 & 98.47 & 54.84 & 62.66 & 69.04 \\
 \small
 \begin{tabular}{lcccccc}
 \toprule
-& \multicolumn{3}{c}{\textbf{图片质量}} & \multicolumn{3}{c}{\textbf{视频质量 \cite{dover}}} \\
-\cmidrule(lr){2-4} \cmidrule(lr){5-7} 
+& \multicolumn{3}{c}{\textbf{图片质量}} & \multicolumn{2}{c}{\textbf{视频质量 \cite{dover}}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-6} 
 \textbf{方法} & \textbf{MUSIQ\cite{ke2021musiq}$\uparrow$} & 
 \textbf{MANIQ\cite{maniqa}$\uparrow$} &
 \textbf{NIQE\cite{niqe}$\downarrow$} &  
@@ -335,14 +338,14 @@ VEhancer\cite{he2024venhancer}&45.39 &0.258 &5.894&99.64&9.75\\
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{final/VSRcompare.pdf}
-    \caption{\textbf{其中左下角为通过线性变化得到的视频，左上角为RealBasicVSR方法超分的视频，右上角为Upscale-A-Video获得的视频，右下角为本文方法测试的数据。} 可以发现房屋的纹理细节，还是不合理地方的生成式修复都是本文的方法更占有}
+    \caption{\textbf{其中左下角为通过线性变化得到的视频，左上角为RealBasicVSR方法超分的视频，右上角为Upscale-A-Video获得的视频，右下角为本文方法测试的数据。} 可以发现房屋的纹理细节，还是不合理地方的生成式修复都是本文的方法更占优。}
     \label{fig:vsr2}
 \end{figure}
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{final/VSR_compare_1.pdf}
-    \caption{关于本文方法的更多例子。对于每个四方格，其中左下角为通过线性变化得到的视频，左上角为RealBasicVSR方法超分的视频，右上角为Upscale-A-Video获得的视频，右下角为本文方法测试的数据。 }
+    \caption{关于本文方法的更多例子。对于每个四方格，其中左下角为通过线性变化得到的视频，左上角为RealBasicVSR方法超分的视频，右上角为Upscale-A-Video获得的视频，右下角为本文方法测试的数据。}
     \label{fig:vsr3}
 \end{figure}
 
@@ -376,7 +379,7 @@ VEhancer\cite{he2024venhancer}&45.39 &0.258 &5.894&99.64&9.75\\
     % 单独展示 Ours
     \begin{subfigure}[b]{0.9\textwidth}
         \includegraphics[width=\textwidth]{final/ours.pdf}
-        \caption{我们的方法}
+        \caption{本文的方法}
         \label{fig:ours}
     \end{subfigure}
 
@@ -401,7 +404,7 @@ VEhancer\cite{he2024venhancer}&45.39 &0.258 &5.894&99.64&9.75\\
         \label{fig:venhancer方法}
     \end{subfigure}
 
-    \caption{不同视频超分方法结果展示。（a)为我们的实验结果，（b）为Upscale-A-Video方法， （c）为RealBasicVSR方法结果，（d）为VEnhancer实验结果。放大观看效果更佳。}
+    \caption{不同视频超分方法结果展示。（a)为本文的实验结果，（b）为Upscale-A-Video方法， （c）为RealBasicVSR方法结果，（d）为VEnhancer实验结果。放大观看效果更佳。}
     \label{fig:vsrcompare}
 \end{figure}
 
@@ -409,6 +412,8 @@ VEhancer\cite{he2024venhancer}&45.39 &0.258 &5.894&99.64&9.75\\
 
 \subsection{本章小结}
 本章详细呈现并深入分析了第三章所设计的实验结果。首先，明确了研究所采用的评估方法，包括VBench等常用图像和视频质量评估指标，并解释了其实现方式和评估作用。随后，从定性和定量两个维度，对针对参考图可控视频生成方法（包含两种实验设置）和高分辨率参考图视频生成方法的实验结果进行了多方面分析，并与其他SOTA方法进行了优劣比较。
+
+\cleardoublepage
 
 \section{未来展望}
 本文围绕基于参考图像的视频生成技术展开了系统性的研究与探索。
