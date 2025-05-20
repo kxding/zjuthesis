@@ -2,28 +2,172 @@
 
 {
     \sectionnonum{附录}
-
     \appendixsubsecmajornumbering
+    \subsection{实验细节}
+    本文提出的首帧替换策略、参考帧拼接策略以及ID注入方法均在8张 NVIDIA A800 显卡上进行训练。其中，首帧替换策略训练了约 20,000 个迭代步骤，参考帧拼接策略则训练约 450,000 步以达到最佳效果。所有实验均基于 DiT 模型进行，训练数据采自开源数据集 Koala36M，并从中随机抽取 100 万条样本用于模型训练。实验中所采用的关键参数配置如下所示：
 
-    \subsection{一个附录}
+\begin{table}[h]
+\centering
+\caption{视频生成过程中的关键参数设定}
+\begin{tabular}{ll}
+\toprule
+\textbf{参数名称} & \textbf{取值} \\
+\midrule
+图像宽度（width） & 672 \\
+图像高度（height） & 384 \\
+帧率（fps） & 15 \\
+视频帧数（num\_frames） & 77 \\
+引导尺度（guidance\_scale） & 5 \\
+随机种子（seed） & 1234 \\
+去噪步骤数（num\_inference\_steps） & 30 \\
+\bottomrule
+\end{tabular}
+\label{tab:video-gen-params}
+\end{table}
+    高分辨率参考图的视频生成方法则在16张A800显卡上进行训练，总训练迭代步数约为16,000步。该部分使用的数据集由10万对低质量与高质量视频片段构成，视频对通过文献\cite{wang2021real}中所提出的方法构建而成。
 
-    \begin{figure}[htb]
-        \centering
-        \includegraphics{example-image}
-        \caption{附录中的图片}
-        \label{fig:test-appendix}
-    \end{figure}
+    \subsection{实验伪代码}
 
-    \begin{equation}
-        E=mc^2
-    \end{equation}
+    本节给出上述三种实验方案的伪代码流程图，以帮助读者更直观地理解各方法的实现过程。
 
-    \subsection{另一个附录}
 
-    \begin{equation}
-        x^n + y^n = z^n
-    \end{equation}
+{\small
+\begin{algorithm}
+    \setlength{\baselineskip}{0.9\baselineskip}
+    \caption{首帧替换策略 (First-Frame Latent Replacement Strategy)}
+    \label{alg:first_frame_replacement}
+    \begin{algorithmic}[1]
+    \Require 
+        \Statex 视频数据集 $D = \{V_i\}$，其中 $V_i = (v_{i,0}, v_{i,1}, \dots, v_{i,N-1})$ 为视频帧序列
+        \Statex VAE编码器 $\vaeE$
+        \Statex 视频生成模型（如基于Transformer的扩散模型）$\modelG$
+        \Statex 文本提示 $P$ (可选，用于条件生成)
+        \Statex 噪声调度 $\bar{\alpha}$
+    \Ensure 训练后的模型 $\modelG$
+    
+    \For{每次训练迭代}
+        \State 从 $D$ 中随机采样一个视频片段 $V = (v_0, v_1, \dots, v_{N-1})$
+        \State 提取参考图像 $I_{\text{ref}} = v_0$
+        \State \Comment{将参考图像编码为潜变量，此潜变量不加噪}
+        \State $\zimg \gets \vaeE(I_{\text{ref}})$
+        \State \Comment{对视频的其余帧进行编码}
+        \State $z_{\text{vid},k} \gets \vaeE(v_k)$ for $k=1, \dots, N-1$
+        \State 随机采样扩散时间步 $t \sim \mathcal{U}(1, T_{\text{max}})$
+        \State 随机采样噪声 $\epsilon_k \sim \mathcal{N}(0, \mathbf{I})$ for $k=1, \dots, N-1$
+        \State \Comment{对视频后续帧的潜变量加噪}
+        \State  $z_{\text{vid},k,t}\gets \noiseproc{t}{z_{\text{vid},k}}$ for $k=1, \dots, N-1$
+        \State \Comment{构建模型输入序列，首帧潜变量$\zimg$保持无噪}
+        \State $Z_{\text{input}} \gets (\zimg, z_{\text{vid},1(t)}, \dots, z_{\text{vid},N-1,t})$
+        \If{使用文本条件 $P$}
+            \State $\textcond \gets \text{Encode}(P)$ \Comment{文本编码}
+            \State $\epsilon_{\text{pred}} \gets \modelG(Z_{\text{input}}, t, \textcond)$
+        \Else
+            \State $\epsilon_{\text{pred}} \gets \modelG(Z_{\text{input}}, t)$
+        \EndIf
+        \State \Comment{计算损失，$\epsilon_{\text{target}} = (\text{noise for } z_{\text{vid},1}, \dots, \text{noise for } z_{\text{vid},N-1})$}
+        \State $\mathcal{L} \gets \Vert \epsilon_{\text{pred}}[1:] - [\epsilon_1, \dots, \epsilon_{N-1}] \Vert^2$ 
+        \State 通过反向传播更新 $\modelG$ 的参数 $\theta$
+    \EndFor
+    \end{algorithmic}
+\end{algorithm}
+}
+{\small
+\begin{algorithm}
+    \setlength{\baselineskip}{0.9\baselineskip}
+    \caption{参考帧拼接策略 (Reference-Frame Latent Concatenation Strategy)}
+    \label{alg:ref_frame_concat}
+    \begin{algorithmic}[1]
+    \Require
+        \Statex 视频数据集 $D = \{V_i\}$，其中 $V_i = (v_{i,0}, v_{i,1}, \dots, v_{i,N-1})$
+        \Statex 参考图像数据集 $D_{\text{ref}} = \{I_j\}$
+        \Statex VAE编码器 $\vaeE$
+        \Statex 视频生成模型 $\modelG$
+        \Statex 位置编码函数 $\posenc(\cdot)$
+        \Statex 文本提示 $P$ (可选)
+        \Statex 噪声调度 $\bar{\alpha}$
+    \Ensure 训练后的模型 $\modelG$
+    
+    \For{每次训练迭代}
+        \State 从 $D$ 中随机采样一个视频片段 $V = (v_0, \dots, v_{N-1})$
+        \State 从 $D_{\text{ref}}$ 中随机采样一张参考图像 $I_{\text{ref}}$
+        \State \Comment{编码视频帧和参考图像为潜变量}
+        \State $z_{\text{vid},k} \gets \vaeE(v_k)$ for $k=0, \dots, N-1$
+        \State $\zimg \gets \vaeE(I_{\text{ref}})$
+        \State 随机采样扩散时间步 $t \sim \mathcal{U}(1, T_{\text{max}})$
+        \State 随机采样噪声 $\epsilon_k \sim \mathcal{N}(0, \mathbf{I})$ for $k=0, \dots, N-1$
+        \State \Comment{对视频帧潜变量加噪}
+        \State $z_{\text{vid},k,t} \gets \noiseproc{t}{z_{\text{vid},k}}$ for $k=1, \dots, N-1$
+        \State \Comment{将参考图像潜变量拼接到视频潜变量序列末尾}
+        \State $Z_{\text{latent}} \gets (z_{\text{vid},0(t)}, \dots, z_{\text{vid},N-1,t}, \zimg)$ 
+        \State \Comment{定义位置编码，拼接的图像帧$\zimg$使用首帧的位置编码}
+        \State $P_{\text{encodings}} \gets (\posenc(0), \dots, \posenc(N-1), \posenc(0))$
+        \State 构建模型输入 $Z_{\text{input}}$ (包含 $Z_{\text{latent}}$ 和 $P_{\text{encodings}}$)
+        \If{使用文本条件 $P$}
+            \State $\textcond \gets \text{Encode}(P)$
+            \State $\epsilon_{\text{pred}} \gets \modelG(Z_{\text{input}}, t, \textcond)$
+        \Else
+            \State $\epsilon_{\text{pred}} \gets \modelG(Z_{\text{input}}, t)$
+        \EndIf
+        \State \Comment{损失计算仅针对视频帧部分}
+        \State $\mathcal{L} \gets \Vert \epsilon_{\text{pred}}[:N] - [\epsilon_0, \dots, \epsilon_{N-1}] \Vert^2$
+        \State 通过反向传播更新 $\modelG$ 的参数 $\theta$
+    \EndFor
+    \end{algorithmic}
+\end{algorithm}
+}
+
+{\small
+\begin{algorithm}
+    \setlength{\baselineskip}{0.9\baselineskip}
+    \caption{ID注入方法}
+    \label{alg:id_injection}
+    \begin{algorithmic}[1]    
+    \Require
+        \Statex 视频数据集 $D = \{V_i\}$，其中 $V_i = (v_{i,0}, v_{i,1}, \dots, v_{i,N-1})$
+        \Statex 参考图像数据集 $D_{\text{ID}} = \{I_j^{\text{id}}\}$ (用于ID保持)
+        \Statex VAE编码器 $\vaeE$
+        \Statex 视频生成模型 $\modelG$
+        \Statex 位置编码函数 $\posenc(\cdot)$
+        \Statex 文本提示 $P$ (可选)
+        \Statex 噪声调度 $\bar{\alpha}$
+    \Ensure 训练后的模型 $\modelG$
+    
+    \For{每次训练迭代}
+        \State 从 $D$ 中随机采样一个视频片段 $V = (v_0, \dots, v_{N-1})$
+        \State 从 $D_{\text{ID}}$ 中随机采样一张ID参考图像 $I_{\text{id}}$
+        \State \Comment{编码视频帧和ID参考图像为潜变量}
+        \State $z_{\text{vid},k} \gets \vaeE(v_k)$ for $k=0, \dots, N-1$
+        \State $\zid \gets \vaeE(I_{\text{id}})$
+        \State 随机采样扩散时间步 $t \sim \mathcal{U}(1, T_{\text{max}})$
+        \State 随机采样噪声 $\epsilon_k \sim \mathcal{N}(0, \mathbf{I})$ for $k=0, \dots, N-1$
+        \State \Comment{对视频帧潜变量加噪}
+        \State $z_{\text{vid},k,t} \gets \noiseproc{t}{z_{\text{vid},k}}$ for $k=1, \dots, N-1$
+        \State \Comment{将ID参考图像潜变量拼接到视频潜变量序列末尾}
+        \State $Z_{\text{latent}} \gets (z_{\text{vid},0(t)}, \dots, z_{\text{vid},N-1,t}, \zid)$ 
+        \State \Comment{定义位置编码，ID帧$\zid$使用其在序列中的自然位置编码，不再强制为首帧编码}
+        \State $P_{\text{encodings}} \gets (\posenc(0), \dots, \posenc(N-1), \posenc(N))$
+        \State 构建模型输入 $Z_{\text{input}}$ (包含 $Z_{\text{latent}}$ 和 $P_{\text{encodings}}$)
+        \If{使用文本条件 $P$}
+            \State $\textcond \gets \text{Encode}(P)$
+            \State $\epsilon_{\text{pred}} \gets \modelG(Z_{\text{input}}, t, \textcond)$
+        \Else
+            \State $\epsilon_{\text{pred}} \gets \modelG(Z_{\text{input}}, t)$
+        \EndIf
+        \State \Comment{损失计算仅针对视频帧部分}
+        \State $\mathcal{L} \gets \Vert \epsilon_{\text{pred}}[:N] - [\epsilon_0, \dots, \epsilon_{N-1}] \Vert^2$
+        \State 通过反向传播更新 $\modelG$ 的参数 $\theta$
+    \EndFor
+    \end{algorithmic}
+\end{algorithm}
+}
+
+
 
     % End of appendix
     \removeappendixsubsecmajornumbering
 }
+
+
+
+
+

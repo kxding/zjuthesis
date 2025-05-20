@@ -3,8 +3,36 @@
     \bfseries \zihao{3} 摘~要
 \end{center}
 
+随着深度学习与生成模型的飞速进展，文本到视频生成（Text-to-Video, T2V）技术已取得显著突破。与此同时，研究者逐渐意识到纯文本提示在描述细致视觉信息、艺术风格与身份特征方面的固有局限性，从而推动参考图可控视频一致性生成成为新的研究趋势。\
+尽管该领域潜力巨大，当前仍缺乏成熟的系统化方法。虽然已有研究初步探索了图像引导的视频生成，但在多个方面仍面临明显挑战。现有方法在高效融合参考图像与文本信息方面尚不成熟，导致生成内容往往无法充分利用图像中的身份或风格信息。特别是在人物、虚拟角色或个性化内容生成任务中，\
+生成视频常在多帧之间出现身份漂移或特征模糊的问题。此外，部分方法更倾向于生成静态风格画面，其动态表现力受限，动作幅度较小且节奏不自然，缺乏真实世界的时序连贯性。同时，当前高质量视频生成模型普遍参数庞大、推理成本高昂，难以满足实际应用对分辨率和帧率的双重需求。
 
+本文针对上述挑战，提出创新性方法以提升参考图像引导下的视频生成质量、可控性与推理效率。主要贡献如下：
+
+（1）针对视频生成内容不一致问题，先系统性分析了“首帧替换策略”与“参考帧拼接策略”这两种主流图像引导视频生成策略。在此基础上，本文针对参考帧拼接策略提出了一种改进的身份（ID）保持视频生成方法，从而在增强动态表现力的同时，实现对主体身份的长期保持。
+
+（2）为解决高分辨率视频生成的高开销问题，本文参考Flow matching流程，提出一种适用于加速视频推理的策略。旨在保持或提升生成质量的同时减少高分辨率参考图指导视频生成所需总时长。
+
+（3）为更好地评估生成视频的质量，本文从定性与定量两个维度，对三种不同设置下的实验结果进行了多方面分析，并构建了一个包含108个视频文本描述的测试集，涵盖人物、动物、物体和风景等多个类别。
+
+\vspace{0.5cm} % 调整摘要与关键词之间的间距
+
+\noindent
+关键词： 参考图像视频生成；扩散模型；身份保持；高分辨率视频；模型轻量化
 \cleardoublepage{}
 \begin{center}
     \bfseries \zihao{3} Abstract
 \end{center}
+
+With the rapid advancement of deep learning and generative models, Text-to-Video (T2V) generation has achieved remarkable breakthroughs. Meanwhile, researchers have gradually recognized the inherent limitations of pure text prompts in conveying fine-grained visual details, artistic styles, and identity features, leading to a growing interest in reference image-guided consistent video generation.Despite the great potential of this field, there is still a lack of mature and systematic approaches. Although some studies have begun to explore image-guided video generation, significant challenges remain. Existing methods are often inadequate at effectively integrating reference images with textual information, resulting in generated content that fails to fully utilize identity or stylistic cues from the images. In tasks such as human character, virtual avatar, or personalized content generation, issues like identity drift and feature blurring frequently occur across frames. Furthermore, many current methods tend to produce static-styled visuals with limited motion and unnatural pacing, lacking temporal coherence akin to the real world. High-quality video generation models also tend to be parameter-heavy and computationally expensive, making it difficult to meet the dual demands of resolution and frame rate in practical applications.
+
+This study proposes an innovative approach to address these challenges and improve the quality, controllability, and efficiency of reference image-guided video generation. The main contributions are as follows:
+
+(1) To address content inconsistency in video generation, we systematically analyze two mainstream reference image-guided strategies: the “first-frame replacement strategy” and the “reference-frame concatenation strategy.” Based on this, we propose an improved identity-preserving video generation method under the reference-frame concatenation framework, enhancing dynamic expressiveness while ensuring long-term identity consistency.
+
+(2) To tackle the high computational cost of high-resolution video generation, we enhance the Flow Matching process. By combining the Flow Matching inference mechanism with ODE-based numerical solvers, we introduce a strategy aimed at accelerating video inference while maintaining or improving output quality when guided by high-resolution reference images.
+
+(3) To better evaluate the quality of the generated videos, this paper conducts both qualitative and quantitative analyses from multiple dimensions under different settings. A test set consisting of 108 videos covering various categories including humans, animals, objects, and landscapes has been constructed.
+
+\noindent
+Key Words: reference image based video generation; diffusion model; ID consistency; high-resolution video; lightweight model
