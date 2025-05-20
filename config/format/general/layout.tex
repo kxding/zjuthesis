@@ -31,7 +31,12 @@
     \fancypagestyle{common}
     {
         \commonhead{}
+
+        \fancyhead[R]{\ifthenelse{\isodd{\value{page}}}{\zihao{-5} \songti \Title}{}}
+        \fancyhead[L]{\ifthenelse{\isodd{\value{page}}}{}{\zihao{-5} \songti \TitleTypeName}}
+
         \fancyfoot{}
+
         \fancyfoot[C]{\zihao{-5} \thepage}
     }
     % Previous part header & footer
