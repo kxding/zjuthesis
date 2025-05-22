@@ -3,8 +3,8 @@
     \bfseries \zihao{3} 摘~要
 \end{center}
 
-随着深度学习与生成模型的飞速进展，文本到视频生成（Text-to-Video, T2V）技术已取得显著突破。与此同时，研究者逐渐意识到纯文本提示在描述细致视觉信息、艺术风格与身份特征方面的固有局限性，从而推动参考图可控视频一致性生成成为新的研究趋势。\
-尽管该领域潜力巨大，当前仍缺乏成熟的系统化方法。虽然已有研究初步探索了图像引导的视频生成，但在多个方面仍面临明显挑战。现有方法在高效融合参考图像与文本信息方面尚不成熟，导致生成内容往往无法充分利用图像中的身份或风格信息。特别是在人物、虚拟角色或个性化内容生成任务中，\
+随着深度学习与生成模型的飞速进展，文本到视频生成（Text-to-Video, T2V）技术已取得显著突破。与此同时，研究者们逐渐意识到纯文本提示在描述细致视觉信息、艺术风格与身份特征方面的固有局限性，因此参考图可控视频一致性生成成为新的研究趋势。\
+尽管该领域潜力巨大，已有研究初步探索了图像引导的视频生成，但当前仍缺乏成熟的系统化方法、在多个方面仍面临明显挑战。现有方法在高效融合参考图像与文本信息方面尚不成熟，导致生成内容往往无法充分利用图像中的身份或风格信息。特别是在人物、虚拟角色或个性化内容生成任务中，\
 生成视频常在多帧之间出现身份漂移或特征模糊的问题。此外，部分方法更倾向于生成静态风格画面，其动态表现力受限，动作幅度较小且节奏不自然，缺乏真实世界的时序连贯性。同时，当前高质量视频生成模型普遍参数庞大、推理成本高昂，难以满足实际应用对分辨率和帧率的双重需求。
 
 本文针对上述挑战，提出创新性方法以提升参考图像引导下的视频生成质量、可控性与推理效率。主要贡献如下：
@@ -18,13 +18,13 @@
 \vspace{0.5cm} % 调整摘要与关键词之间的间距
 
 \noindent
-关键词： 参考图像视频生成；扩散模型；身份保持；高分辨率视频；模型轻量化
+\textbf{关键词：} 参考图像视频生成；扩散模型；身份保持；高分辨率视频；模型轻量化
 \cleardoublepage{}
 \begin{center}
     \bfseries \zihao{3} Abstract
 \end{center}
 
-With the rapid advancement of deep learning and generative models, Text-to-Video (T2V) generation has achieved remarkable breakthroughs. Meanwhile, researchers have gradually recognized the inherent limitations of pure text prompts in conveying fine-grained visual details, artistic styles, and identity features, leading to a growing interest in reference image-guided consistent video generation.Despite the great potential of this field, there is still a lack of mature and systematic approaches. Although some studies have begun to explore image-guided video generation, significant challenges remain. Existing methods are often inadequate at effectively integrating reference images with textual information, resulting in generated content that fails to fully utilize identity or stylistic cues from the images. In tasks such as human character, virtual avatar, or personalized content generation, issues like identity drift and feature blurring frequently occur across frames. Furthermore, many current methods tend to produce static-styled visuals with limited motion and unnatural pacing, lacking temporal coherence akin to the real world. High-quality video generation models also tend to be parameter-heavy and computationally expensive, making it difficult to meet the dual demands of resolution and frame rate in practical applications.
+With the rapid advancement of deep learning and generative models, Text-to-Video (T2V) generation has achieved remarkable breakthroughs. Meanwhile, researchers have gradually recognized the inherent limitations of pure text prompts in conveying fine-grained visual details, artistic styles, and identity features, leading to a growing interest in reference image-guided consistent video generation.Although this field holds great potential and some studies have begun to explore image-guided video generation, there remains a lack of mature, systematic approaches and significant challenges persist. Existing methods are often inadequate at effectively integrating reference images with textual information, resulting in generated content that fails to fully utilize identity or stylistic cues from the images. In tasks such as human character, virtual avatar, or personalized content generation, issues like identity drift and feature blurring frequently occur across frames. Furthermore, many current methods tend to produce static-styled visuals with limited motion and unnatural pacing, lacking temporal coherence akin to the real world. High-quality video generation models also tend to be parameter-heavy and computationally expensive, making it difficult to meet the dual demands of resolution and frame rate in practical applications.
 
 This study proposes an innovative approach to address these challenges and improve the quality, controllability, and efficiency of reference image-guided video generation. The main contributions are as follows:
 
@@ -37,4 +37,4 @@ This study proposes an innovative approach to address these challenges and impro
 \vspace{0.5cm} % 调整摘要与关键词之间的间距
 
 \noindent
-Key Words: reference image based video generation; diffusion model; ID consistency; high-resolution video; lightweight model
+\textbf{Key Words: }reference image based video generation; diffusion model; ID consistency; high-resolution video; lightweight model
