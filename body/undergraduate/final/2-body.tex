@@ -31,7 +31,6 @@ Transformer的核心在于其Attention机制，该机制最初由Vaswani等人�
 本章围绕视频生成任务中的核心基本技术展开论述，重点介绍了视频扩散模型的架构演进、流匹配策略、跨模态特征融合策略以及时空位置编码方法。后面章节将会以这些基本技术为基础展开相应的实验设计和探究。
 
 \cleardoublepage
-
 \section{基于DiT模型的参考图可控视频一致性生成}
 本章将从三个方面围绕参考图可控视频生成这一中心问题进行递进探讨，以增强生成视频的一致性，并且探讨在保持生成质量的同时减少高分辨率参考图指导视频生成所需总时长。
 \subsection{基于固定首帧的参考图像到视频生成}\label{sec1}
@@ -45,15 +44,14 @@ Transformer的核心在于其Attention机制，该机制最初由Vaswani等人�
 
 \textbf{首帧替换策略}：该策略的核心操作是将训练视频样本的第一帧，在潜变量层面，直接替换为参考图像经过VAE编码后的潜变量， 在经过DiT网络和真实视频直接进行相应Loss值计算通过梯度回传更新模型参数，以得到能够生成首帧主体人物细节的视频。为辅助理解，本文提供了首帧替换策略的算法流程图\ref{alg:first_frame_replacement}。 值得注意的是，在每次训练迭代中，此参考图像的潜变量(记为 image\_latent)在输入后续的生成模型(如Transformer)时，不添加扩散模型通常所需的噪声。这样的设计确保了图像信息的纯净度。因此，在模型内部的注意力计算过程中，后续视频帧的表征(token)能够与这个无噪的图像信息进行充分交互。这种强引导使得模型从生成之初就严格依据参考图像的内容，从而确保生成的视频主题与图像内容高度相关，有效避免了主体漂移和人物失真等常见问题。
  
-\begin{figure}[htbp]
+如图\ref{I2V_1}所示的生成案例，采用首帧替换策略能够产出基本符合预期的视频结果。视频中的主体一致性维持良好，未出现主体身份随时间演变而发生显著改变(主体漂移)或人物面部及形态出现不自然扭曲(人物失真)等不良现象。
+
+\begin{figure}[tp!]
     \centering
     \includegraphics[width=0.8\textwidth]{final/I2V_1.pdf}
     \caption{\textbf{首帧替换策略生成结果示例}}
     \label{I2V_1}
 \end{figure}
-
-如图\ref{I2V_1}所示的生成案例，采用首帧替换策略能够产出基本符合预期的视频结果。视频中的主体一致性维持良好，未出现主体身份随时间演变而发生显著改变(主体漂移)或人物面部及形态出现不自然扭曲(人物失真)等不良现象。
-
 {\small
 \begin{algorithm}[H]
     \setlength{\baselineskip}{0.9\baselineskip}
@@ -245,7 +243,7 @@ z_1 \leftarrow z_1 - \text{dts}[i] \cdot u_{t,\theta}
 %         \State $P_{\text{encodings}} \gets (\posenc(0), \dots, \posenc(N-1), \posenc(N))$
 %         \State 构建模型输入 $Z_{\text{input}}$ (包含 $Z_{\text{latent}}$ 和 $P_{\text{encodings}}$)
 %         \If{使用文本条件 $P$}
-%             \State $\textcond \gets \text{Encode}(P)$
+%             \State $\textcond \gets \text{Encode}(P)$         
 %             \State $\epsilon_{\text{pred}} \gets \modelG(Z_{\text{input}}, t, \textcond)$
 %         \Else
 %             \State $\epsilon_{\text{pred}} \gets \modelG(Z_{\text{input}}, t)$
